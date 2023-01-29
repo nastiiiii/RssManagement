@@ -9,10 +9,9 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Controllers;
 
 [Authorize]
-public class SubscriptionsController: BaseApiConroller
+public class SubscriptionsController : BaseApiConroller
 {
     private readonly DataContext _context;
-    //private string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
     public SubscriptionsController(DataContext context)
     {
@@ -20,59 +19,92 @@ public class SubscriptionsController: BaseApiConroller
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Subscription>>> GetSubscriptions()
+    public async Task<ActionResult<IEnumerable<string>>> GetSubscriptions()
+    {
+        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user =  _context.Users.FirstOrDefault(x => x.UserName == username);
+        return await  _context.Subscriptions.Where(s => s.UserId == user.Id)
+            .Select(x => x.feedUrl).ToListAsync();
+    }
+    
+    [HttpGet("unread")]
+    public async Task<ActionResult<IEnumerable<News>>> GetUnreadNews(DateTime date)
+    {
+        return await _context.News.Where(n => Convert.ToDateTime(n.pubDate) >= date && !n.IsRead).ToListAsync();
+    }
+    
+    [HttpPut("{id}")]
+    public async Task<IActionResult> SetNewsAsRead(int id)
     {
         
-        return await _context.Subscriptions.ToListAsync();
-    }
+        var news = await _context.News.FindAsync(id);
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Subscription>> GetSubscription(int id)
-    {
-        return await _context.Subscriptions.FindAsync(id);
-    }
+        if (news == null)
+        {
+            return NotFound();
+        }
 
+        news.IsRead = true;
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+    
+    
     [HttpPost]
     public async Task<ActionResult<Subscription>> AddRSSFeed(string feedUrl)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        XmlDocument doc = new XmlDocument();
-        doc.Load(feedUrl);
-        XmlNodeList nodes = doc.GetElementsByTagName("item");
-
+        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user =  _context.Users.FirstOrDefault(x => x.UserName == username);
         var news = new List<News>();
-            
-        foreach (XmlNode node in nodes)
-        {
-            var message = new News
-            {
-                Title = node["title"].InnerText,
-                Description = node["description"].InnerText,
-                Url = node["link"].InnerText,
-                IsRead = false,
-                SubscriptionId = _context.Subscriptions.Last().Id + 1
-            };
-            _context.News.Add(message);
-        }
        
 
         var subscription = new Subscription
         {
             feedUrl = feedUrl,
             News = news,
-            UserId = Convert.ToInt32(userId)
+            UserId = user.Id
         };
         
         _context.Subscriptions.Add(subscription);
         await _context.SaveChangesAsync();
+        
+        var lastId = _context.Subscriptions.Max(x => x.Id);
+       
 
-        return subscription; 
+        _context.Subscriptions.FirstOrDefault(x => x.Id == lastId).News = createNewsList(feedUrl, lastId);
+        
+        await _context.SaveChangesAsync();
+
+        return Ok();
     }
     
-    // [HttpPut("{id}")]
-    // public async Task<IActionResult> SetNewsAsRead(int id)
-    // {
-    //     
-    // }
+    
 
-} 
+    private List<News> createNewsList(string feedUrl, int lastId)
+    {
+        var news = new List<News>();
+        var doc = new XmlDocument();
+        doc.Load(feedUrl);
+        var nodes = doc.GetElementsByTagName("item");
+
+        foreach (XmlNode node in nodes)
+        {
+            
+            var message = new News
+            {
+                Title = node["title"].InnerText,
+                Description = node["description"].InnerText,
+                Url = node["link"].InnerText,
+                IsRead = false,
+                pubDate = node["pubDate"].InnerText,
+                SubscriptionId = lastId
+            };
+            news.Add(message);
+            _context.News.Add(message);
+        }
+
+        return news;
+    }
+    
+}

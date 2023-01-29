@@ -5,7 +5,7 @@
 namespace API.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class NewsEntity : Migration
+    public partial class NewsEntityUpgraded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -54,6 +54,7 @@ namespace API.Data.Migrations
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     Url = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
+                    pubDate = table.Column<string>(type: "TEXT", nullable: false),
                     IsRead = table.Column<bool>(type: "INTEGER", nullable: false),
                     SubscriptionId = table.Column<int>(type: "INTEGER", nullable: false)
                 },

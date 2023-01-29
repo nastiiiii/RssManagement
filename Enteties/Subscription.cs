@@ -1,4 +1,6 @@
-﻿namespace API.Enteties;
+﻿using System.Xml;
+
+namespace API.Enteties;
 
 public class Subscription
 {
@@ -10,4 +12,5 @@ public class Subscription
 
     public int UserId { get; set; }
     public User User { get; set; }
+    
 }
