@@ -1,0 +1,138 @@
+{
+	"info": {
+		"_postman_id": "335e46a4-775b-4f33-a64d-1beb07f7ccff",
+		"name": "Rss Management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21208791"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:44304/Account/register",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44304",
+					"path": [
+						"Account",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Subscriptions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44304/Subscriptions",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44304",
+					"path": [
+						"Subscriptions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add rssfeed",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44304/Subscriptions/login?feedUrl=https://www.nasa.gov/rss/dyn/Gravity-Assist.rss",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44304",
+					"path": [
+						"Subscriptions",
+						"login"
+					],
+					"query": [
+						{
+							"key": "feedUrl",
+							"value": "https://www.nasa.gov/rss/dyn/Gravity-Assist.rss"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all unread news by date",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJuYXN0aSIsIm5iZiI6MTY3NDk5NDg4MywiZXhwIjoxNjc1NTk5NjgzLCJpYXQiOjE2NzQ5OTQ4ODN9.MOZvbbYdaegBfsiRIjLmlvRiKAo1Sl1qK3OFaS5QhqLCgvP2tCvYJTcLTRHkTv9UjJ3pEef9Ma7dARlYr6UFyQ",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://localhost:44304/Subscriptions/unread",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44304",
+					"path": [
+						"Subscriptions",
+						"unread"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Set news as read",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44304/Subscriptions/1",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44304",
+					"path": [
+						"Subscriptions",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
