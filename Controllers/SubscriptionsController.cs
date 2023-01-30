@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 using System.Xml;
 using API.Data;
 using API.Enteties;
@@ -21,22 +22,23 @@ public class SubscriptionsController : BaseApiConroller
     [HttpGet]
     public async Task<ActionResult<IEnumerable<string>>> GetSubscriptions()
     {
-        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user =  _context.Users.FirstOrDefault(x => x.UserName == username);
-        return await  _context.Subscriptions.Where(s => s.UserId == user.Id)
+        return await  _context.Subscriptions.Where(s => s.UserId == GetUserId())
             .Select(x => x.feedUrl).ToListAsync();
     }
     
     [HttpGet("unread")]
-    public async Task<ActionResult<IEnumerable<News>>> GetUnreadNews(DateTime date)
+    public async Task<ActionResult<IEnumerable<News>>> GetUnreadNews(string date)
     {
-        return await _context.News.Where(n => Convert.ToDateTime(n.pubDate) >= date && !n.IsRead).ToListAsync();
+        string format = "ddd, dd MMM yyyy HH:mm";
+        DateTime date1 = DateTime.ParseExact(date, format, CultureInfo.InvariantCulture);
+        return await _context.News.Where(n => 
+           DateTime.ParseExact(n.pubDate, format, CultureInfo.InvariantCulture) >= date1 && !n.IsRead)
+            .ToListAsync();
     }
     
     [HttpPut("{id}")]
     public async Task<IActionResult> SetNewsAsRead(int id)
     {
-        
         var news = await _context.News.FindAsync(id);
 
         if (news == null)
@@ -54,8 +56,6 @@ public class SubscriptionsController : BaseApiConroller
     [HttpPost]
     public async Task<ActionResult<Subscription>> AddRSSFeed(string feedUrl)
     {
-        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user =  _context.Users.FirstOrDefault(x => x.UserName == username);
         var news = new List<News>();
        
 
@@ -63,7 +63,7 @@ public class SubscriptionsController : BaseApiConroller
         {
             feedUrl = feedUrl,
             News = news,
-            UserId = user.Id
+            UserId = GetUserId()
         };
         
         _context.Subscriptions.Add(subscription);
@@ -105,6 +105,13 @@ public class SubscriptionsController : BaseApiConroller
         }
 
         return news;
+    }
+
+    private int GetUserId()
+    {
+        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user =  _context.Users.FirstOrDefault(x => x.UserName == username);
+        return user.Id;
     }
     
 }
